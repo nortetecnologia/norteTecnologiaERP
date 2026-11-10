@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { saveProduto } from "./actions";
+import ImageUpload from "@/components/ImageUpload";
 
 interface Category { id: string; name: string }
 
@@ -107,6 +108,13 @@ export default function ProdutoForm({
           />
           <label htmlFor="active" className="text-sm text-gray-300">Produto ativo</label>
         </div>
+
+        <ImageUpload
+          name="image_url"
+          currentUrl={product?.image_url}
+          folder="erp/produtos"
+          label="Imagem do produto"
+        />
       </div>
 
       <div className="flex gap-3">

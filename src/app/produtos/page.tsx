@@ -19,7 +19,7 @@ export default async function ProdutosPage({
 
   let query = supabase
     .from("products")
-    .select("id, name, sku, price, stock_quantity, active, categories(name)")
+    .select("id, name, sku, price, stock_quantity, active, image_url, categories(name)")
     .order("name")
     .limit(200);
 
@@ -75,10 +75,19 @@ export default async function ProdutosPage({
                 products.map((p: any) => (
                   <tr key={p.id} className="border-t border-brand-gray-mid hover:bg-brand-gray-mid/30 transition-colors">
                     <td className="px-5 py-3">
-                      <div className="text-white font-medium">{p.name}</div>
-                      {p.categories?.name && (
-                        <div className="text-xs text-gray-500">{p.categories.name}</div>
-                      )}
+                      <div className="flex items-center gap-3">
+                        {p.image_url ? (
+                          <img src={p.image_url} alt={p.name} className="w-10 h-10 object-cover rounded-lg shrink-0" />
+                        ) : (
+                          <div className="w-10 h-10 bg-brand-gray-mid rounded-lg shrink-0 flex items-center justify-center text-gray-600 text-xs">📦</div>
+                        )}
+                        <div>
+                          <div className="text-white font-medium">{p.name}</div>
+                          {p.categories?.name && (
+                            <div className="text-xs text-gray-500">{p.categories.name}</div>
+                          )}
+                        </div>
+                      </div>
                     </td>
                     <td className="px-5 py-3 text-gray-400 hidden md:table-cell">{p.sku ?? "—"}</td>
                     <td className="px-5 py-3 text-right text-white">{formatCurrency(p.price)}</td>
