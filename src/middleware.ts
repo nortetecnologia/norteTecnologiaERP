@@ -12,7 +12,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/icons") ||
     pathname === "/manifest.json" ||
     pathname === "/sw.js" ||
-    pathname === "/favicon.ico";
+    pathname === "/favicon.ico" ||
+    /\.(png|jpg|jpeg|gif|ico|svg|webp|woff2?|ttf|otf)$/i.test(pathname);
 
   if (isPublicAsset) return supabaseResponse;
 
@@ -96,6 +97,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|icons|manifest\\.json|sw\\.js).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|icons|manifest\\.json|sw\\.js|[^/]+\\.[a-zA-Z]+$).*)",
   ],
 };
