@@ -23,7 +23,8 @@ export default function PDVClient({
   const [state, action, isPending] = useActionState(createSale, null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [payments, setPayments] = useState<Payment[]>([{ method: defaultMethod, amount: 0 }]);
-  const [discount, setDiscount] = useState(0);
+  const [discountInput, setDiscountInput] = useState(0);
+  const [discountType, setDiscountType] = useState<"R$" | "%">("R$");
   const [search, setSearch] = useState("");
   const [customerId, setCustomerId] = useState("");
 
@@ -70,7 +71,9 @@ export default function PDVClient({
   }
 
   const subtotal = cart.reduce((s, i) => s + i.quantity * i.unit_price, 0);
-  const total = subtotal - discount;
+  const discount = discountType === "%" ? (subtotal * discountInput) / 100 : discountInput;
+  const discountPct = subtotal > 0 ? (discount / subtotal) * 100 : 0;
+  const total = Math.max(0, subtotal - discount);
   const paidTotal = payments.reduce((s, p) => s + (p.amount || 0), 0);
   const change = paidTotal - total;
 
@@ -203,17 +206,33 @@ export default function PDVClient({
           </div>
 
           {/* Discount */}
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-500 w-20 shrink-0">Desconto</label>
-            <input
-              type="number"
-              name="discount"
-              value={discount}
-              onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-              min="0"
-              step="0.01"
-              className="flex-1 bg-brand-gray-mid border border-brand-gray-light rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-brand-yellow"
-            />
+          <input type="hidden" name="discount" value={discount.toFixed(2)} />
+          <div className="space-y-1">
+            <label className="text-xs text-gray-500">Desconto</label>
+            <div className="flex gap-2">
+              <div className="flex rounded-lg overflow-hidden border border-brand-gray-light shrink-0">
+                <button
+                  type="button"
+                  onClick={() => { setDiscountType("R$"); setDiscountInput(0); }}
+                  className={`px-3 py-1.5 text-xs font-medium transition-colors ${discountType === "R$" ? "bg-brand-yellow text-brand-black" : "bg-brand-gray-mid text-gray-400 hover:text-white"}`}
+                >R$</button>
+                <button
+                  type="button"
+                  onClick={() => { setDiscountType("%"); setDiscountInput(0); }}
+                  className={`px-3 py-1.5 text-xs font-medium transition-colors ${discountType === "%" ? "bg-brand-yellow text-brand-black" : "bg-brand-gray-mid text-gray-400 hover:text-white"}`}
+                >%</button>
+              </div>
+              <input
+                type="number"
+                value={discountInput || ""}
+                onChange={(e) => setDiscountInput(parseFloat(e.target.value) || 0)}
+                min="0"
+                max={discountType === "%" ? 100 : undefined}
+                step={discountType === "%" ? 1 : 0.01}
+                placeholder={discountType === "%" ? "0%" : "0,00"}
+                className="flex-1 bg-brand-gray-mid border border-brand-gray-light rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-brand-yellow"
+              />
+            </div>
           </div>
 
           {/* Payments */}
@@ -272,10 +291,11 @@ export default function PDVClient({
           </div>
           {discount > 0 && (
             <div className="flex justify-between text-sm text-red-400">
-              <span>Desconto</span><span>- {formatCurrency(discount)}</span>
+              <span>Desconto ({discountPct.toFixed(1)}%)</span>
+              <span>- {formatCurrency(discount)}</span>
             </div>
           )}
-          <div className="flex justify-between text-base font-bold text-white">
+          <div className="flex justify-between text-base font-bold text-white border-t border-brand-gray-mid pt-2 mt-1">
             <span>Total</span><span className="text-brand-yellow">{formatCurrency(total)}</span>
           </div>
           {change > 0 && (
