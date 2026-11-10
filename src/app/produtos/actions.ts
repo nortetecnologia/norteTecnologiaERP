@@ -10,6 +10,15 @@ async function getAuth() {
   return createAdminClient();
 }
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export async function saveProduto(prevState: unknown, formData: FormData) {
   const supabase = await getAuth();
 
@@ -29,15 +38,32 @@ export async function saveProduto(prevState: unknown, formData: FormData) {
     is_active: formData.get("is_active") === "true",
   };
 
-  // images é um array; imageUrl null = sem mudança, "" = remover, URL = nova imagem
-  if (imageUrl !== null) payload.images = imageUrl ? [imageUrl] : [];
+  let productId = id;
 
   if (id) {
     const { error } = await supabase.from("products").update(payload).eq("id", id);
     if (error) return { error: error.message };
   } else {
-    const { error } = await supabase.from("products").insert(payload);
+    payload.slug = slugify(name) + "-" + Date.now();
+    const { data, error } = await supabase.from("products").insert(payload).select("id").single();
     if (error) return { error: error.message };
+    productId = data.id;
+  }
+
+  // Save image to product_images table
+  if (imageUrl !== null && productId) {
+    if (imageUrl) {
+      await supabase.from("product_images").delete().eq("product_id", productId).eq("is_primary", true);
+      await supabase.from("product_images").insert({
+        product_id: productId,
+        url: imageUrl,
+        alt: name,
+        is_primary: true,
+        position: 0,
+      });
+    } else {
+      await supabase.from("product_images").delete().eq("product_id", productId).eq("is_primary", true);
+    }
   }
 
   revalidatePath("/produtos");

@@ -19,7 +19,7 @@ export default async function ProdutosPage({
 
   let query = supabase
     .from("products")
-    .select("id, name, sku, price, stock, is_active, images")
+    .select("id, name, sku, price, stock, is_active, product_images(url, is_primary)")
     .order("name")
     .limit(200);
 
@@ -84,8 +84,8 @@ export default async function ProdutosPage({
                   <tr key={p.id} className="border-t border-brand-gray-mid hover:bg-brand-gray-mid/30 transition-colors">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
-                        {p.images?.[0] ? (
-                          <img src={p.images[0]} alt={p.name} className="w-10 h-10 object-cover rounded-lg shrink-0" />
+                        {(p.product_images?.find((i: any) => i.is_primary)?.url ?? p.product_images?.[0]?.url) ? (
+                          <img src={p.product_images?.find((i: any) => i.is_primary)?.url ?? p.product_images[0].url} alt={p.name} className="w-10 h-10 object-cover rounded-lg shrink-0" />
                         ) : (
                           <div className="w-10 h-10 bg-brand-gray-mid rounded-lg shrink-0 flex items-center justify-center text-gray-600 text-xs">📦</div>
                         )}

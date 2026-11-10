@@ -11,7 +11,7 @@
 - **Estágio:** Sistema em produção. Todos os módulos da Fase 1 implementados e funcionando.
 - **URL de produção:** `https://norte-tecnologia-sistema.vercel.app`
 - **Última atividade:** 2026-11-10 — Correção de nomes de colunas (produtos/PDV), configurações completas com formas de pagamento, validação CPF/CNPJ.
-- **Situação geral:** Sistema operacional. Migrations aplicadas no Supabase. Cloudinary integrado. Upload de imagens nas OS funcionando. Autenticação por `app_metadata.erp_role`. Banco de dados compartilhado com o site — colunas corretas: `is_active`, `stock`, `primary_image_url`.
+- **Situação geral:** Sistema operacional. Migrations aplicadas no Supabase. Cloudinary integrado. Upload de imagens nas OS funcionando. Autenticação por `app_metadata.erp_role`. Banco de dados compartilhado com o site — colunas corretas: `is_active`, `stock`. Imagens em tabela separada `product_images(id, product_id, url, alt, is_primary, position)`.
 - **Próxima etapa:** Fase 2 — Roles diferenciados no dashboard (admin vs. operador), relatórios avançados, NF-e.
 
 ---
@@ -20,19 +20,30 @@
 
 - **Data:** 2026-11-10
 - **Atividade:** Correção de nomes de colunas no banco compartilhado com o site; configurações completas; validação CPF/CNPJ.
-- **Commits:** `097c196` (docs), `322303e` (relatórios OS/Vendas), `ad639f3` (fix colunas + config + CPF)
-- **Resultado:** Produtos aparecem corretamente em Produtos e PDV. Configurações salva whatsapp, e-mail, cidade, UF e formas de pagamento. Clientes validam CPF/CNPJ antes de enviar.
+- **Commits:** `097c196` (docs), `322303e` (relatórios OS/Vendas), `ad639f3` (fix colunas + config + CPF), pendente commit fix product_images
+- **Resultado:** Produtos aparecem corretamente em Produtos e PDV usando join `product_images(url, is_primary)`. Configurações salva whatsapp, e-mail, cidade, UF e formas de pagamento. Clientes validam CPF/CNPJ antes de enviar.
 - **Situação:** Sistema estável em produção.
 
 ---
 
 ## 3. Implementações concluídas
 
+### 2026-11-10 — Fix: imagens de produtos via tabela product_images
+
+- **Objetivo:** Corrigir "Nenhum produto encontrado" em Produtos e PDV — erro era `column products.images does not exist`.
+- **Causa raiz:** As imagens de produtos não ficam em coluna na tabela `products`. Ficam em tabela separada `product_images(id, product_id, url, alt, is_primary, position)` — igual ao site e-commerce.
+- **Implementação:**
+  1. **Produtos/PDV (4 arquivos):** query alterada para `.select("... product_images(url, is_primary)")`. JSX e interface TypeScript atualizados para ler `p.product_images?.find(i => i.is_primary)?.url ?? p.product_images?.[0]?.url`.
+  2. **`produtos/actions.ts`:** removido `payload.images = ...` (coluna não existe). Adicionada geração de `slug` obrigatório (`name-timestamp`) no insert. Após salvar produto, imagem salva em `product_images` com `is_primary: true` via insert/delete na tabela.
+- **Arquivos alterados:** `src/app/produtos/page.tsx`, `ProdutoForm.tsx`, `actions.ts`, `src/app/pdv/page.tsx`, `PDVClient.tsx`
+
+---
+
 ### 2026-11-10 — Fix: nomes de colunas produtos/PDV + configurações + validação CPF/CNPJ
 
 - **Objetivo:** Corrigir "Nenhum produto encontrado" em Produtos e PDV, campos faltantes em Configurações e adicionar validação de CPF/CNPJ em Clientes.
-- **Causa raiz:** ERP usava nomes de colunas errados para a tabela `products` (compartilhada com o site): `active` (correto: `is_active`), `stock_quantity` (correto: `stock`), `image_url` (correto: `images text[]`). Configurações usava `phone` (correto: `whatsapp_number`) e não expunha `email`, `city`, `state_abbr`, `payment_methods`.
-- **Nota:** A coluna de imagem em `products` é `images text[]` (array), não `primary_image_url`. Para exibir usa-se `images[0]`.
+- **Causa raiz:** ERP usava nomes de colunas errados para a tabela `products` (compartilhada com o site): `active` (correto: `is_active`), `stock_quantity` (correto: `stock`). Imagens não ficam em coluna de `products` — ficam em tabela separada `product_images(id, product_id, url, alt, is_primary, position)`. Configurações usava `phone` (correto: `whatsapp_number`) e não expunha `email`, `city`, `state_abbr`, `payment_methods`.
+- **Nota:** Para exibir imagem de produto, usar join `.select("product_images(url, is_primary)")` e mapear `product_images.find(i => i.is_primary)?.url ?? product_images[0]?.url`.
 - **Implementação:**
   1. **Produtos/PDV (6 arquivos):** renomeadas todas as referências às colunas incorretas
   2. **Configurações:** `ConfigForm.tsx` reescrito com todos os campos reais de `store_settings`; editor de formas de pagamento (adicionar/remover); `actions.ts` atualizado
