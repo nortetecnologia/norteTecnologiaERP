@@ -19,7 +19,7 @@ export default async function ProdutosPage({
 
   let query = supabase
     .from("products")
-    .select("id, name, sku, price, stock, is_active, images, categories(name)")
+    .select("id, name, sku, price, stock, is_active, images")
     .order("name")
     .limit(200);
 
@@ -67,7 +67,13 @@ export default async function ProdutosPage({
               </tr>
             </thead>
             <tbody>
-              {products.length === 0 ? (
+              {productsError ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-red-400 text-xs px-5">
+                    Erro ao carregar produtos: {productsError.message}
+                  </td>
+                </tr>
+              ) : products.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-12 text-gray-500">
                     Nenhum produto encontrado.
@@ -85,9 +91,6 @@ export default async function ProdutosPage({
                         )}
                         <div>
                           <div className="text-white font-medium">{p.name}</div>
-                          {p.categories?.name && (
-                            <div className="text-xs text-gray-500">{p.categories.name}</div>
-                          )}
                         </div>
                       </div>
                     </td>
