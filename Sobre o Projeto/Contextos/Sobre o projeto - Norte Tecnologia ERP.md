@@ -42,7 +42,9 @@ Tabelas próprias do ERP têm prefixo `erp_` para evitar conflito com tabelas do
 
 O ERP utiliza o mesmo Supabase Auth do site. Os usuários são criados manualmente no Supabase (sem cadastro público).
 
-Não há distinção de roles na Fase 1 — todos os usuários autenticados têm acesso completo ao ERP. Roles diferenciados (operador/admin) são planejados para a Fase 2.
+**Roles implementados:** `admin` e `operador`, armazenados em `app_metadata.erp_role` no Supabase Auth. A role é lida diretamente do JWT no middleware, sem query adicional ao banco. Usuários sem role explícita são tratados como `operador`.
+
+Para conceder acesso ao ERP, definir `app_metadata.erp_role` via Supabase Dashboard ou via `setUserERPRole()` em `src/lib/auth.ts`.
 
 ---
 
@@ -78,12 +80,15 @@ O PDV usa as formas de pagamento configuradas em `store_settings.payment_methods
 
 ## 7. Fases planejadas
 
-### Fase 1 (atual)
+### Fase 1 (concluída — em produção)
 - Clientes (CRUD)
 - Produtos/Serviços (CRUD + estoque compartilhado com site)
-- Ordens de Serviço
+- Ordens de Serviço (com upload de imagens para Cloudinary)
 - PDV
-- Dashboard com métricas do dia
+- Dashboard com métricas do dia e ações rápidas
+- Relatórios básicos
+- Configurações (formas de pagamento)
+- Autenticação com roles admin/operador via `app_metadata`
 - PWA instalável
 
 ### Fase 2

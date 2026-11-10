@@ -8,23 +8,116 @@
 
 ## 1. Estado atual do projeto
 
-- **Estágio:** Estrutura inicial criada. Next.js scaffolding completo. Módulos de Clientes, Produtos, Estoque, OS e PDV implementados com CRUD básico. PWA configurado.
-- **Última atividade:** 2026-11-10 — Criação inicial do projeto ERP.
-- **Situação geral:** Projeto criado. Dependências instaladas. **Migrations ERP ainda não aplicadas no Supabase.**
-- **Próxima etapa:** 1) Aplicar migrations `erp_001` a `erp_003` no Supabase SQL Editor. 2) Configurar variáveis de ambiente. 3) Testar build local. 4) Deploy na Vercel.
+- **Estágio:** Sistema em produção. Todos os módulos da Fase 1 implementados e funcionando.
+- **URL de produção:** `https://norte-tecnologia-sistema.vercel.app`
+- **Última atividade:** 2026-11-10 — Correção de middleware bloqueando arquivos estáticos + verificação de logo na produção.
+- **Situação geral:** Sistema operacional. Migrations aplicadas no Supabase. Cloudinary integrado. Upload de imagens nas OS funcionando. Autenticação por `app_metadata.erp_role`.
+- **Próxima etapa:** Fase 2 — Roles diferenciados no dashboard (admin vs. operador), relatórios avançados, NF-e.
 
 ---
 
 ## 2. Última atualização
 
 - **Data:** 2026-11-10
-- **Atividade:** Criação inicial completa do projeto ERP — estrutura, docs, config, todos os módulos.
-- **Resultado:** Projeto pronto para instalar dependências e aplicar migrations.
-- **Situação:** Aguardando aplicação de migrations no Supabase e configuração de env vars.
+- **Atividade:** Correção do middleware que redirecionava requisições para arquivos estáticos (`.png`, `.jpg`, etc.) para `/login`, causando quebra da logo na tela de login.
+- **Resultado:** Logo da Norte Tecnologia exibindo corretamente em produção.
+- **Situação:** Sistema estável em produção.
 
 ---
 
 ## 3. Implementações concluídas
+
+### 2026-11-10 — Fix: middleware bloqueando arquivos estáticos
+
+- **Objetivo:** Corrigir logo quebrada na tela de login (exibia texto alternativo "Norte Tecnologia").
+- **Causa raiz:** O middleware (`src/middleware.ts`) redirecionava qualquer requisição não autenticada para `/login`, incluindo `/logo.png`. O navegador recebia HTML em vez de PNG.
+- **Implementação:**
+  - `isPublicAsset` agora inclui regex `/\.(png|jpg|jpeg|gif|ico|svg|webp|woff2?|ttf|otf)$/i`
+  - Matcher do Next.js atualizado para excluir qualquer caminho com extensão de arquivo: `[^/]+\\.[a-zA-Z]+$`
+- **Arquivos alterados:** `src/middleware.ts`
+- **Commit:** `41e6c0d`
+
+---
+
+### 2026-11-10 — Fix: logo, fonte Inter e caminhos de ícones
+
+- **Objetivo:** Corrigir diferença de fonte entre o ERP e o site, logo quebrada e caminhos errados de ícones PWA.
+- **Implementação:**
+  1. **Fonte Inter:** `inter.variable` movido de `<body>` para `<html>` em `layout.tsx`, com `display: "swap"`
+  2. **Logo:** trocado `<Image>` (Next.js) por `<img>` nativo na tela de login para evitar falhas do otimizador
+  3. **Ícones PWA:** corrigidos de `/icons/icon-192.png` para `/icon-192.png` em `layout.tsx` e `manifest.json`
+- **Arquivos alterados:** `src/app/layout.tsx`, `src/app/login/page.tsx`, `public/manifest.json`
+- **Commit:** `193cec8`
+
+---
+
+### 2026-11-10 — Feat: upload de imagens nas Ordens de Serviço + design do dashboard
+
+- **Objetivo:** Permitir anexar fotos do equipamento nas OS; corrigir botões de ação rápida do dashboard.
+- **Implementação:**
+  1. **Upload de imagens OS:**
+     - `src/app/os/uploadAction.ts` — Server Action com validação de magic bytes (JPEG/PNG/WebP/GIF), assinatura SHA-1, upload para Cloudinary na pasta `norte-tecnologia/erp-os`
+     - `src/app/os/nova/OSForm.tsx` — input de arquivo, preview grid, upload imediato ao selecionar, URLs ocultas no form
+     - `src/app/os/actions.ts` — `createServiceOrder` extrai e salva `images[]` no banco
+     - `src/app/os/[id]/page.tsx` — galeria de imagens no detalhe da OS
+     - `src/types/index.ts` — `images?: string[]` adicionado à interface `ServiceOrder`
+  2. **Migration manual no Supabase:** `ALTER TABLE erp_service_orders ADD COLUMN IF NOT EXISTS images text[] DEFAULT '{}';`
+  3. **Dashboard:** botões de ação rápida alterados de azul (`bg-brand-blue/20`) para cinza escuro (`bg-brand-gray-dark`), ícones emoji substituídos por SVG, hover amarelo
+- **Arquivos alterados:** `src/app/os/uploadAction.ts` (novo), `src/app/os/nova/OSForm.tsx`, `src/app/os/actions.ts`, `src/app/os/[id]/page.tsx`, `src/types/index.ts`, `src/app/dashboard/page.tsx`
+- **Commit:** `dfe054c`
+
+---
+
+### 2026-11-10 — Design: redesign do ERP idêntico ao admin do site
+
+- **Objetivo:** Alinhar visual do ERP ao painel admin do site.
+- **Implementação:** Padronização de cores, tipografia e componentes para manter consistência visual.
+- **Commit:** `cae363c`
+
+---
+
+### 2026-11-10 — Feat: ERP completo — correções TypeScript, estoque, relatórios, logos
+
+- **Objetivo:** Corrigir erros TypeScript, completar módulo de estoque, adicionar página de relatórios, adicionar logos.
+- **Commit:** `c775bb0`
+
+---
+
+### 2026-11-10 — Feat: logos e ícones oficiais
+
+- **Objetivo:** Adicionar `logo.png` (NT, 320×400) e ícones PWA (`icon-192.png`, `icon-512.png`) ao projeto.
+- **Arquivos adicionados:** `public/logo.png`, `public/icon-192.png`, `public/icon-512.png`
+- **Commit:** `1f248e2`
+
+---
+
+### 2026-11-10 — Refactor: acesso ERP via app_metadata do Supabase
+
+- **Objetivo:** Simplificar controle de acesso — usar `app_metadata.erp_role` em vez de tabela `erp_user_roles`.
+- **Implementação:**
+  - `src/lib/auth.ts` — `extractRole()` lê `app_metadata.erp_role`; `setUserERPRole()` atualiza via Admin API
+  - Middleware lê role diretamente do JWT, sem query adicional ao banco
+  - Tabela `erp_user_roles` mantida como referência mas não usada ativamente
+- **Roles disponíveis:** `admin` | `operador` (todo autenticado sem role explícita é tratado como `operador`)
+- **Arquivos alterados:** `src/lib/auth.ts`, `src/middleware.ts`
+- **Commit:** `8bae789`
+
+---
+
+### 2026-11-10 — Feat: autenticação e controle de acesso por papel
+
+- **Objetivo:** Implementar sistema de roles (admin/operador) no ERP.
+- **Implementação:** Migration `erp_004_user_roles.sql`, funções `requireAuth()` e `requireAdmin()` em `lib/auth.ts`
+- **Commit:** `321f31f`
+
+---
+
+### 2026-11-10 — Feat: upload Cloudinary, imagens nos produtos/PDV, detalhe do cliente
+
+- **Objetivo:** Integrar Cloudinary para imagens de produtos; melhorar PDV e detalhe do cliente.
+- **Commit:** `06bf2f5`
+
+---
 
 ### 2026-11-10 — Criação inicial do projeto ERP
 
@@ -40,13 +133,11 @@
   8. **Produtos:** listagem com estoque, cadastro/edição (mesma tabela do site), controle de estoque
   9. **OS (Ordem de Serviço):** criação, edição de status, listagem, impressão com/sem valores
   10. **PDV:** busca de produto, carrinho, múltiplos pagamentos, finalização com baixa de estoque
-  11. **PWA:** manifest.json, sw.js, ícones NT
-  12. **Migrations:** erp_001_customers.sql, erp_002_service_orders.sql, erp_003_pdv.sql
-- **Arquivos criados:** todos os arquivos do projeto
-- **Limitações conhecidas:**
-  - Rate limiting em memória (por instância Vercel Hobby — funciona para uso interno)
-  - Impressão usa `window.print()` — requer CSS de impressão adequado
-  - PDV sem suporte a leitor de código de barras físico na Fase 1 (busca manual)
+  11. **Relatórios:** página de relatórios básica
+  12. **Configurações:** página de configurações (formas de pagamento)
+  13. **PWA:** manifest.json, sw.js, ícones NT
+  14. **Migrations:** erp_001_customers.sql, erp_002_service_orders.sql, erp_003_pdv.sql
+- **Commit:** `5578648`
 
 ---
 
@@ -54,24 +145,21 @@
 
 | Item | Prioridade | Detalhe |
 |------|-----------|--------|
-| Aplicar migrations no Supabase | CRÍTICO | `erp_001`, `erp_002`, `erp_003` |
-| Configurar variáveis de ambiente | CRÍTICO | `.env.local` com credenciais Supabase + Cloudinary |
-| Deploy na Vercel | ALTA | Criar projeto na Vercel, configurar domínio `erp.nortetecnologia.com` |
-| Testar build local | ALTA | `npm run build` para verificar erros TypeScript |
-| Upload de imagens no ERP | MÉDIA | Usar mesmo Cloudinary do site |
-| Relatórios avançados | BAIXA | Fase 2 |
+| Configurar domínio `erp.nortetecnologia.com` | ALTA | Configurar na Vercel e apontar DNS |
+| Upload de imagem na edição de OS | MÉDIA | Atualmente só é possível na criação |
+| Relatórios avançados | BAIXA | Fase 2 — faturamento, lucratividade |
 | Emissão de NF | BAIXA | Fase 2 — Focus NFe ou NFe.io |
+| Roles no dashboard | BAIXA | Fase 2 — mostrar/ocultar funções admin |
 
 ---
 
-## 5. Próximas etapas
+## 5. Próximas etapas (Fase 2)
 
-1. **Aplicar migrations ERP no Supabase** (`erp_001` → `erp_002` → `erp_003`, nesta ordem)
-2. **Configurar `.env.local`** com as mesmas credenciais do site mais `NEXT_PUBLIC_SITE_URL`
-3. **`npm install` e `npm run dev`** para testar localmente
-4. **`npm run build`** para verificar erros
-5. **Deploy na Vercel** — criar novo projeto apontando para o repo do ERP
-6. **Configurar domínio** `erp.nortetecnologia.com` na Vercel
+1. **Configurar domínio** `erp.nortetecnologia.com` na Vercel
+2. **Upload de imagem na edição de OS** — reutilizar `uploadAction.ts` no form de edição
+3. **Relatórios avançados** — faturamento por período, OS por status, ticket médio
+4. **Roles no dashboard** — ações admin somente visíveis para `role === 'admin'`
+5. **Emissão de NF-e/NFS-e** — integração com Focus NFe ou NFe.io
 
 ---
 
@@ -81,6 +169,9 @@
 |---------|--------|
 | Tabelas com prefixo `erp_` | Coexistência no mesmo Supabase sem conflito com o site |
 | Mesmo Supabase Auth | Reusar usuários admin já existentes; evitar nova instância |
+| `app_metadata.erp_role` para roles | Role lida do JWT sem query adicional ao banco; mais eficiente no middleware |
 | OS sem NF na Fase 1 | Complexidade fiscal adiada; OS serve como documento interno |
 | PWA com mesmo padrão do site | Usuário quer instalar no mobile/desktop da equipe |
 | Sidebar em vez de header | ERP é ferramenta interna; sidebar é padrão de backoffice |
+| `<img>` nativo na tela de login | Next.js Image optimizer falha silenciosamente para imagens portrait em containers landscape |
+| Middleware exclui extensões de arquivo | Arquivos estáticos em `/public` devem ser acessíveis sem autenticação |

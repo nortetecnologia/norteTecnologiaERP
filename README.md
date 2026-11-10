@@ -35,6 +35,7 @@ Compartilha o mesmo banco de dados Supabase do site de e-commerce, permitindo qu
 - Status: Aguardando, Em andamento, Concluída, Entregue, Cancelada
 - Impressão com ou sem valores (modo requisição interna)
 - Número sequencial automático
+- Upload de fotos do equipamento (Cloudinary, pasta `norte-tecnologia/erp-os`)
 
 ### PDV — Ponto de Venda
 - Venda direta com busca de produto por nome, SKU ou código de barras
@@ -50,7 +51,13 @@ Compartilha o mesmo banco de dados Supabase do site de e-commerce, permitindo qu
 
 ### Dashboard
 - Resumo do dia (vendas, OS abertas, estoque crítico)
-- Acesso rápido aos módulos
+- Acesso rápido aos módulos com ícones SVG e hover amarelo
+
+### Relatórios
+- Resumo de vendas e OS por período (básico — Fase 1)
+
+### Configurações
+- Gerenciamento de formas de pagamento
 
 ---
 
@@ -59,16 +66,18 @@ Compartilha o mesmo banco de dados Supabase do site de e-commerce, permitindo qu
 ```
 src/
 ├── app/                    # App Router (Next.js 15)
-│   ├── layout.tsx          # Layout raiz
+│   ├── layout.tsx          # Layout raiz (Inter font, PWA meta)
 │   ├── page.tsx            # Redireciona para /dashboard ou /login
 │   ├── globals.css         # Design tokens e estilos globais
 │   ├── login/              # Autenticação
-│   ├── dashboard/          # Tela inicial
+│   ├── dashboard/          # Tela inicial com métricas e ações rápidas
 │   ├── clientes/           # Módulo de clientes
 │   ├── produtos/           # Módulo de produtos/serviços
 │   ├── estoque/            # Módulo de estoque
-│   ├── os/                 # Ordens de Serviço
-│   └── pdv/                # Ponto de Venda
+│   ├── os/                 # Ordens de Serviço (+ uploadAction.ts para Cloudinary)
+│   ├── pdv/                # Ponto de Venda
+│   ├── relatorios/         # Relatórios básicos
+│   └── configuracoes/      # Configurações (formas de pagamento)
 │
 ├── components/
 │   ├── ui/                 # Componentes genéricos (Button, Input, Modal, Badge)
@@ -76,8 +85,12 @@ src/
 │
 ├── lib/
 │   ├── supabase/           # Clientes Supabase (client, server, admin)
+│   ├── auth.ts             # requireAuth, requireAdmin, extractRole, setUserERPRole
+│   ├── cloudinary.ts       # getCloudinaryCreds()
 │   ├── rateLimit.ts        # Rate limiter sliding window por IP
 │   └── utils.ts            # Funções utilitárias
+│
+├── middleware.ts            # Proteção de rotas (exclui arquivos estáticos e /login)
 │
 └── types/
     └── index.ts            # Tipos TypeScript do domínio ERP
@@ -153,13 +166,21 @@ Disponível em [http://localhost:3001](http://localhost:3001) (porta configuráv
 
 ---
 
+## Deploy
+
+**URL de produção:** `https://norte-tecnologia-sistema.vercel.app`
+
+Hospedado na Vercel. Deploy automático a partir da branch `main`.
+
+---
+
 ## Fases de Desenvolvimento
 
-| Fase | Escopo |
-|------|--------|
-| **Fase 1** (atual) | Clientes, Produtos/Estoque, OS, PDV, Dashboard |
-| **Fase 2** | Emissão de NF-e/NFS-e via API externa (Focus NFe ou NFe.io) |
-| **Fase 3** | Relatórios avançados, integração CRM, app mobile nativo |
+| Fase | Escopo | Status |
+|------|--------|--------|
+| **Fase 1** | Clientes, Produtos/Estoque, OS (com imagens), PDV, Dashboard, Relatórios básicos, Configurações, Roles admin/operador | ✅ Concluída |
+| **Fase 2** | Emissão de NF-e/NFS-e, relatórios avançados, roles no dashboard | 🔜 Planejada |
+| **Fase 3** | Integração CRM, app mobile nativo, integração com balança/impressora | 🔜 Planejada |
 
 ---
 

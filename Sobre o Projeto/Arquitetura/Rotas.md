@@ -34,7 +34,8 @@ O middleware redireciona para `/login` qualquer acesso não autenticado.
 | `/os/[id]/imprimir` | Impressão da OS (com ou sem valores) |
 | `/pdv` | Ponto de Venda |
 | `/pdv/[id]/recibo` | Impressão de recibo de venda |
-| `/configuracoes` | Configurações do ERP (somente leitura por enquanto) |
+| `/configuracoes` | Configurações do ERP (formas de pagamento) |
+| `/relatorios` | Relatórios de vendas e OS (básico — Fase 1) |
 
 ---
 
@@ -50,17 +51,20 @@ O middleware redireciona para `/login` qualquer acesso não autenticado.
 | `createProduct` | `/produtos/actions.ts` | Criar produto (reutiliza lógica do site) |
 | `updateProduct` | `/produtos/actions.ts` | Editar produto |
 | `adjustStock` | `/estoque/actions.ts` | Ajuste manual de estoque |
-| `createServiceOrder` | `/os/actions.ts` | Criar OS |
-| `updateServiceOrder` | `/os/actions.ts` | Editar OS |
+| `createServiceOrder` | `/os/actions.ts` | Criar OS (inclui salvar `images[]`) |
 | `updateOSStatus` | `/os/actions.ts` | Mudar status da OS |
+| `deleteServiceOrder` | `/os/actions.ts` | Excluir OS |
+| `uploadOSImage` | `/os/uploadAction.ts` | Upload de imagem para Cloudinary (pasta `norte-tecnologia/erp-os`) |
 | `createSale` | `/pdv/actions.ts` | Finalizar venda PDV com baixa de estoque |
 
 ---
 
 ## Middleware
 
-O middleware (`src/middleware.ts`) protege todas as rotas exceto `/login`:
+O middleware (`src/middleware.ts`) protege todas as rotas exceto `/login` e arquivos estáticos:
 
 ```
-matcher: ["/((?!login|_next/static|_next/image|favicon|manifest|sw|icons).*)"]
+matcher: ["/((?!_next/static|_next/image|favicon\\.ico|icons|manifest\\.json|sw\\.js|[^/]+\\.[a-zA-Z]+$).*)"]
 ```
+
+A verificação `isPublicAsset` também exclui explicitamente extensões de arquivo comuns (`.png`, `.jpg`, `.svg`, `.webp`, `.woff2`, etc.) para que assets em `/public` sejam servidos sem autenticação.

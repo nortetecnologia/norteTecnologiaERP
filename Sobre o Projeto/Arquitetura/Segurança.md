@@ -9,12 +9,14 @@
 
 ---
 
-## Autenticação
+## Autenticação e Roles
 
 - Supabase Auth via e-mail e senha
 - Sem cadastro público — usuários criados manualmente no Supabase
-- Middleware Next.js protege todas as rotas exceto `/login`
-- Verificação in-action adicional como defesa em profundidade
+- Middleware Next.js protege todas as rotas exceto `/login` e arquivos estáticos
+- Verificação in-action adicional como defesa em profundidade (`requireAuth()` e `requireAdmin()` em `src/lib/auth.ts`)
+- **Roles:** `admin` | `operador` armazenados em `app_metadata.erp_role` (lidos do JWT, sem query adicional)
+- Usuários sem `erp_role` definido são tratados como `operador` por padrão
 
 ## Rate Limiting
 

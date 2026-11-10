@@ -50,9 +50,12 @@ labor_cost      NUMERIC(10,2)
 discount        NUMERIC(10,2)
 notes           TEXT                  -- observações internas
 estimated_at    DATE                  -- previsão de entrega
+images          TEXT[] DEFAULT '{}'   -- URLs Cloudinary (pasta norte-tecnologia/erp-os)
 created_at      TIMESTAMPTZ
 updated_at      TIMESTAMPTZ
 ```
+
+> **Migration manual aplicada:** `ALTER TABLE erp_service_orders ADD COLUMN IF NOT EXISTS images text[] DEFAULT '{}';`
 
 ### `erp_service_order_items`
 Itens de cada OS (peças usadas ou serviços cobrados).
@@ -129,9 +132,25 @@ Todas as tabelas `erp_*` têm RLS habilitado:
 
 ---
 
+### `erp_user_roles` (referência — não usada ativamente)
+
+Tabela criada pelo `erp_004_user_roles.sql`. O controle de acesso atual usa `app_metadata.erp_role` no Supabase Auth (sem consulta a esta tabela), pois a role é lida diretamente do JWT.
+
+```sql
+id         UUID PRIMARY KEY
+user_id    UUID → auth.users
+role       TEXT  -- 'admin' | 'operador'
+created_at TIMESTAMPTZ
+```
+
+---
+
 ## Migrations
 
-Aplicar no Supabase SQL Editor na ordem:
-1. `supabase/migrations/erp_001_customers.sql`
-2. `supabase/migrations/erp_002_service_orders.sql`
-3. `supabase/migrations/erp_003_pdv.sql`
+Aplicadas no Supabase SQL Editor (já executadas em produção):
+
+1. `supabase/migrations/erp_001_customers.sql` — tabela `erp_customers`
+2. `supabase/migrations/erp_002_service_orders.sql` — tabelas `erp_service_orders` e `erp_service_order_items`
+3. `supabase/migrations/erp_003_pdv.sql` — tabelas `erp_pdv_sales`, `erp_pdv_sale_items`, `erp_pdv_sale_payments`, `erp_stock_movements`
+4. `supabase/migrations/erp_004_user_roles.sql` — tabela `erp_user_roles` (referência)
+5. **Manual:** `ALTER TABLE erp_service_orders ADD COLUMN IF NOT EXISTS images text[] DEFAULT '{}';`
