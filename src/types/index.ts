@@ -69,6 +69,7 @@ export interface ServiceOrder {
   discount?: number;
   notes?: string;
   estimated_at?: string;
+  images?: string[];
   created_at: string;
   updated_at: string;
   erp_customers?: Customer;

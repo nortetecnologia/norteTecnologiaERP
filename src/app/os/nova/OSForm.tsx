@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useActionState } from "react";
+import { useState, useActionState, useRef } from "react";
+import Image from "next/image";
 import { createServiceOrder } from "../actions";
+import { uploadOSImage } from "../uploadAction";
 
 interface Customer { id: string; name: string; phone?: string }
 interface Product { id: string; name: string; price: number; sku?: string }
@@ -18,6 +20,31 @@ export default function OSForm({
 }) {
   const [state, action, isPending] = useActionState(createServiceOrder, INITIAL);
   const [items, setItems] = useState<Item[]>([{ description: "", quantity: 1, unit_price: 0 }]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    setUploadError(null);
+    setUploading(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    const result = await uploadOSImage(fd);
+    setUploading(false);
+    if (result.url) {
+      setImageUrls((prev) => [...prev, result.url!]);
+    } else {
+      setUploadError(result.error ?? "Erro no upload.");
+    }
+  }
+
+  function removeImage(idx: number) {
+    setImageUrls((prev) => prev.filter((_, i) => i !== idx));
+  }
 
   function addItem() {
     setItems((prev) => [...prev, { description: "", quantity: 1, unit_price: 0 }]);
@@ -126,6 +153,72 @@ export default function OSForm({
             />
           </div>
         </div>
+      </div>
+
+      {/* Images */}
+      <div className="bg-brand-gray-dark border border-brand-gray-mid rounded-xl p-5 space-y-3">
+        <div className="text-sm font-semibold text-gray-300">Imagens do Equipamento</div>
+
+        {imageUrls.length > 0 && (
+          <div className="grid grid-cols-3 gap-2">
+            {imageUrls.map((url, idx) => (
+              <div key={idx} className="relative group aspect-square rounded-lg overflow-hidden border border-brand-gray-mid">
+                <Image src={url} alt={`Imagem ${idx + 1}`} fill className="object-cover" sizes="150px" />
+                <button
+                  type="button"
+                  onClick={() => removeImage(idx)}
+                  className="absolute top-1 right-1 bg-black/70 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="Remover imagem"
+                >
+                  ✕
+                </button>
+                <input type="hidden" name={`image_url_${idx}`} value={url} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {uploadError && (
+          <p className="text-xs text-red-400">{uploadError}</p>
+        )}
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            disabled={uploading}
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 text-sm text-brand-yellow hover:text-brand-yellow-dark transition-colors disabled:opacity-50"
+          >
+            {uploading ? (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
+                  <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+                  <path d="M12 2a10 10 0 010 20" />
+                </svg>
+                Enviando...
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Adicionar imagem
+              </>
+            )}
+          </button>
+          <span className="text-xs text-gray-600">JPG, PNG, WebP — máx. 10MB</span>
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageSelect}
+          className="hidden"
+        />
+        <input type="hidden" name="images_count" value={imageUrls.length} />
       </div>
 
       {/* Items */}

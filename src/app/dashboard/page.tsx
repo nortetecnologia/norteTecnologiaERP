@@ -77,18 +77,57 @@ export default async function DashboardPage() {
         {/* Quick actions */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
           {[
-            { href: "/pdv", label: "Nova Venda", icon: "🛒" },
-            { href: "/os/nova", label: "Nova OS", icon: "🔧" },
-            { href: "/clientes/novo", label: "Novo Cliente", icon: "👤" },
-            { href: "/produtos/novo", label: "Novo Produto", icon: "📦" },
+            {
+              href: "/pdv",
+              label: "Nova Venda",
+              icon: (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
+                </svg>
+              ),
+            },
+            {
+              href: "/os/nova",
+              label: "Nova OS",
+              icon: (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
+                </svg>
+              ),
+            },
+            {
+              href: "/clientes/novo",
+              label: "Novo Cliente",
+              icon: (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                  <line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="10" x2="12" y2="12"/>
+                </svg>
+              ),
+            },
+            {
+              href: "/produtos/novo",
+              label: "Novo Produto",
+              icon: (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <path d="M16 10a4 4 0 01-8 0"/>
+                </svg>
+              ),
+            },
           ].map((action) => (
             <Link
               key={action.href}
               href={action.href}
-              className="bg-brand-blue/20 hover:bg-brand-blue/30 border border-brand-blue/30 rounded-lg p-4 text-center transition-colors"
+              className="bg-brand-gray-dark hover:bg-brand-gray-mid border border-brand-gray-mid rounded-lg p-4 text-center transition-colors group"
             >
-              <div className="text-2xl mb-1">{action.icon}</div>
-              <div className="text-xs text-blue-300 font-medium">{action.label}</div>
+              <div className="flex justify-center mb-2 text-[#6b7280] group-hover:text-brand-yellow transition-colors">
+                {action.icon}
+              </div>
+              <div className="text-xs text-[#9ca3af] font-medium group-hover:text-white transition-colors">{action.label}</div>
             </Link>
           ))}
         </div>

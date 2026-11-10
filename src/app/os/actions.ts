@@ -19,6 +19,13 @@ export async function createServiceOrder(_prevState: unknown, formData: FormData
   if (!title) return { error: "Título/problema é obrigatório." };
   if (!customerId) return { error: "Selecione um cliente." };
 
+  const imagesCount = parseInt(formData.get("images_count") as string) || 0;
+  const images: string[] = [];
+  for (let i = 0; i < imagesCount; i++) {
+    const url = (formData.get(`image_url_${i}`) as string)?.trim();
+    if (url) images.push(url);
+  }
+
   const { data, error } = await supabase
     .from("erp_service_orders")
     .insert({
@@ -32,6 +39,7 @@ export async function createServiceOrder(_prevState: unknown, formData: FormData
       discount: parseFloat(formData.get("discount") as string) || 0,
       notes: (formData.get("notes") as string)?.trim() || null,
       estimated_at: (formData.get("estimated_at") as string) || null,
+      ...(images.length > 0 ? { images } : {}),
     })
     .select("id")
     .single();
