@@ -4,28 +4,45 @@ import { useState } from "react";
 import { useActionState } from "react";
 import { saveSettings } from "./actions";
 
-const DEFAULT_PAYMENT_METHODS = ["Dinheiro", "PIX", "Cartão de Crédito", "Cartão de Débito"];
+interface PaymentMethod {
+  name: string;
+  label: string;
+}
 
-export default function ConfigForm({ settings }: { settings: any }) {
+export default function ConfigForm({
+  settings,
+  paymentMethods,
+}: {
+  settings: any;
+  paymentMethods: { id: number; name: string; label: string; is_active: boolean; position: number }[];
+}) {
   const [state, action, isPending] = useActionState(saveSettings, null);
 
-  const initialMethods: string[] =
-    settings?.payment_methods?.length > 0
-      ? settings.payment_methods
-      : DEFAULT_PAYMENT_METHODS;
+  const [methods, setMethods] = useState<PaymentMethod[]>(
+    paymentMethods.filter((m) => m.is_active).map((m) => ({ name: m.name, label: m.label }))
+  );
+  const [newLabel, setNewLabel] = useState("");
 
-  const [methods, setMethods] = useState<string[]>(initialMethods);
-  const [newMethod, setNewMethod] = useState("");
-
-  function addMethod() {
-    const trimmed = newMethod.trim();
-    if (!trimmed || methods.includes(trimmed)) return;
-    setMethods((prev) => [...prev, trimmed]);
-    setNewMethod("");
+  function slugify(text: string) {
+    return text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
   }
 
-  function removeMethod(idx: number) {
-    setMethods((prev) => prev.filter((_, i) => i !== idx));
+  function addMethod() {
+    const label = newLabel.trim();
+    if (!label) return;
+    const name = slugify(label) || `metodo_${Date.now()}`;
+    if (methods.some((m) => m.name === name || m.label === label)) return;
+    setMethods((prev) => [...prev, { name, label }]);
+    setNewLabel("");
+  }
+
+  function removeMethod(name: string) {
+    setMethods((prev) => prev.filter((m) => m.name !== name));
   }
 
   return (
@@ -41,9 +58,12 @@ export default function ConfigForm({ settings }: { settings: any }) {
         </div>
       )}
 
-      {/* Hidden inputs for payment methods array */}
-      {methods.map((m, i) => (
-        <input key={i} type="hidden" name="payment_method[]" value={m} />
+      {/* Hidden inputs para a lista de formas de pagamento */}
+      {methods.map((m) => (
+        <span key={m.name}>
+          <input type="hidden" name="pm_name" value={m.name} />
+          <input type="hidden" name="pm_label" value={m.label} />
+        </span>
       ))}
 
       <div className="bg-brand-gray-dark border border-brand-gray-mid rounded-xl p-5 space-y-4">
@@ -64,7 +84,7 @@ export default function ConfigForm({ settings }: { settings: any }) {
               type="text"
               name="whatsapp_number"
               defaultValue={settings?.whatsapp_number ?? ""}
-              placeholder="(95) 99999-9999"
+              placeholder="5591999999999"
               className="w-full bg-brand-gray-mid border border-brand-gray-light rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-yellow"
             />
           </div>
@@ -105,7 +125,7 @@ export default function ConfigForm({ settings }: { settings: any }) {
               name="state_abbr"
               defaultValue={settings?.state_abbr ?? ""}
               maxLength={2}
-              placeholder="RR"
+              placeholder="PA"
               className="w-full bg-brand-gray-mid border border-brand-gray-light rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-yellow"
             />
           </div>
@@ -113,16 +133,21 @@ export default function ConfigForm({ settings }: { settings: any }) {
       </div>
 
       <div className="bg-brand-gray-dark border border-brand-gray-mid rounded-xl p-5 space-y-4">
-        <div className="text-sm font-semibold text-gray-300">Formas de pagamento</div>
-        <p className="text-xs text-gray-500">Métodos disponíveis no PDV.</p>
+        <div>
+          <div className="text-sm font-semibold text-gray-300">Formas de pagamento</div>
+          <p className="text-xs text-gray-500 mt-1">Métodos disponíveis no PDV e no site.</p>
+        </div>
 
         <div className="space-y-2">
-          {methods.map((m, idx) => (
-            <div key={idx} className="flex items-center justify-between bg-brand-gray-mid rounded-lg px-3 py-2">
-              <span className="text-sm text-white">{m}</span>
+          {methods.map((m) => (
+            <div key={m.name} className="flex items-center justify-between bg-brand-gray-mid rounded-lg px-3 py-2">
+              <div>
+                <span className="text-sm text-white">{m.label}</span>
+                <span className="text-xs text-gray-600 ml-2">({m.name})</span>
+              </div>
               <button
                 type="button"
-                onClick={() => removeMethod(idx)}
+                onClick={() => removeMethod(m.name)}
                 className="text-xs text-gray-500 hover:text-red-400 transition-colors ml-3"
               >
                 Remover
@@ -134,10 +159,10 @@ export default function ConfigForm({ settings }: { settings: any }) {
         <div className="flex gap-2">
           <input
             type="text"
-            value={newMethod}
-            onChange={(e) => setNewMethod(e.target.value)}
+            value={newLabel}
+            onChange={(e) => setNewLabel(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addMethod(); } }}
-            placeholder="Nova forma de pagamento..."
+            placeholder="Ex: Cheque, Crédito 10x..."
             className="flex-1 bg-brand-gray-mid border border-brand-gray-light rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-yellow"
           />
           <button

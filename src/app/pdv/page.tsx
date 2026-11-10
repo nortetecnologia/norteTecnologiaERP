@@ -10,7 +10,7 @@ export default async function PDVPage() {
   if (!user) redirect("/login");
 
   const supabase = createAdminClient();
-  const [{ data: productsRaw }, { data: customersRaw }] = await Promise.all([
+  const [{ data: productsRaw }, { data: customersRaw }, { data: paymentMethodsRaw }] = await Promise.all([
     supabase
       .from("products")
       .select("id, name, price, sku, stock, product_images(url, is_primary)")
@@ -20,13 +20,24 @@ export default async function PDVPage() {
       .from("erp_customers")
       .select("id, name, phone")
       .order("name"),
+    supabase
+      .from("payment_methods")
+      .select("name, label")
+      .eq("is_active", true)
+      .order("position"),
   ]);
   const products = productsRaw ?? [];
   const customers = customersRaw ?? [];
+  const paymentMethods = paymentMethodsRaw ?? [
+    { name: "dinheiro", label: "Dinheiro" },
+    { name: "pix", label: "PIX" },
+    { name: "debito", label: "Cartão de Débito" },
+    { name: "credito_1x", label: "Crédito 1x" },
+  ];
 
   return (
     <AppLayout>
-      <PDVClient products={products} customers={customers} />
+      <PDVClient products={products} customers={customers} paymentMethods={paymentMethods} />
     </AppLayout>
   );
 }

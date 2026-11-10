@@ -8,28 +8,21 @@ interface Product { id: string; name: string; price: number; sku?: string; stock
 interface Customer { id: string; name: string; phone?: string }
 interface CartItem { product_id: string; description: string; quantity: number; unit_price: number }
 interface Payment { method: string; amount: number }
-
-const PAYMENT_METHODS = [
-  { value: "dinheiro", label: "Dinheiro" },
-  { value: "pix", label: "Pix" },
-  { value: "debito", label: "Débito" },
-  { value: "credito_1x", label: "Crédito 1x" },
-  { value: "credito_2x", label: "Crédito 2x" },
-  { value: "credito_3x", label: "Crédito 3x" },
-  { value: "credito_6x", label: "Crédito 6x" },
-  { value: "credito_12x", label: "Crédito 12x" },
-];
+interface PaymentMethodOption { name: string; label: string }
 
 export default function PDVClient({
   products,
   customers,
+  paymentMethods,
 }: {
   products: Product[];
   customers: Customer[];
+  paymentMethods: PaymentMethodOption[];
 }) {
+  const defaultMethod = paymentMethods[0]?.name ?? "pix";
   const [state, action, isPending] = useActionState(createSale, null);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([{ method: "pix", amount: 0 }]);
+  const [payments, setPayments] = useState<Payment[]>([{ method: defaultMethod, amount: 0 }]);
   const [discount, setDiscount] = useState(0);
   const [search, setSearch] = useState("");
   const [customerId, setCustomerId] = useState("");
@@ -65,7 +58,7 @@ export default function PDVClient({
   }
 
   function addPayment() {
-    setPayments((prev) => [...prev, { method: "dinheiro", amount: 0 }]);
+    setPayments((prev) => [...prev, { method: defaultMethod, amount: 0 }]);
   }
 
   function removePayment(idx: number) {
@@ -241,8 +234,8 @@ export default function PDVClient({
                   onChange={(e) => updatePayment(idx, "method", e.target.value)}
                   className="flex-1 bg-brand-gray-mid border border-brand-gray-light rounded-lg px-2 py-1.5 text-sm text-white focus:outline-none focus:border-brand-yellow"
                 >
-                  {PAYMENT_METHODS.map((m) => (
-                    <option key={m.value} value={m.value}>{m.label}</option>
+                  {paymentMethods.map((m) => (
+                    <option key={m.name} value={m.name}>{m.label}</option>
                   ))}
                 </select>
                 <input
