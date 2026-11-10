@@ -111,7 +111,7 @@ export default function ProdutoForm({
 
         <ImageUpload
           name="primary_image_url"
-          currentUrl={product?.primary_image_url}
+          currentUrl={product?.images?.[0]}
           folder="erp/produtos"
           label="Imagem do produto"
         />

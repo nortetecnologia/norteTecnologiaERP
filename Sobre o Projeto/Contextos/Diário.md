@@ -31,7 +31,8 @@
 ### 2026-11-10 — Fix: nomes de colunas produtos/PDV + configurações + validação CPF/CNPJ
 
 - **Objetivo:** Corrigir "Nenhum produto encontrado" em Produtos e PDV, campos faltantes em Configurações e adicionar validação de CPF/CNPJ em Clientes.
-- **Causa raiz:** ERP usava nomes de colunas errados para a tabela `products` (compartilhada com o site): `active` (correto: `is_active`), `stock_quantity` (correto: `stock`), `image_url` (correto: `primary_image_url`). Configurações usava `phone` (correto: `whatsapp_number`) e não expunha `email`, `city`, `state_abbr`, `payment_methods`.
+- **Causa raiz:** ERP usava nomes de colunas errados para a tabela `products` (compartilhada com o site): `active` (correto: `is_active`), `stock_quantity` (correto: `stock`), `image_url` (correto: `images text[]`). Configurações usava `phone` (correto: `whatsapp_number`) e não expunha `email`, `city`, `state_abbr`, `payment_methods`.
+- **Nota:** A coluna de imagem em `products` é `images text[]` (array), não `primary_image_url`. Para exibir usa-se `images[0]`.
 - **Implementação:**
   1. **Produtos/PDV (6 arquivos):** renomeadas todas as referências às colunas incorretas
   2. **Configurações:** `ConfigForm.tsx` reescrito com todos os campos reais de `store_settings`; editor de formas de pagamento (adicionar/remover); `actions.ts` atualizado

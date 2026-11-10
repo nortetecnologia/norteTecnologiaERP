@@ -17,7 +17,7 @@ export async function saveProduto(prevState: unknown, formData: FormData) {
   const name = (formData.get("name") as string)?.trim();
   if (!name) return { error: "Nome é obrigatório." };
 
-  const imageUrl = (formData.get("primary_image_url") as string)?.trim() || null;
+  const imageUrl = (formData.get("primary_image_url") as string)?.trim() ?? null;
 
   const payload: Record<string, unknown> = {
     name,
@@ -29,7 +29,8 @@ export async function saveProduto(prevState: unknown, formData: FormData) {
     is_active: formData.get("is_active") === "true",
   };
 
-  if (imageUrl !== null) payload.primary_image_url = imageUrl || null;
+  // images é um array; imageUrl null = sem mudança, "" = remover, URL = nova imagem
+  if (imageUrl !== null) payload.images = imageUrl ? [imageUrl] : [];
 
   if (id) {
     const { error } = await supabase.from("products").update(payload).eq("id", id);
