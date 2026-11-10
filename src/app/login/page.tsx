@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { loginAction } from "./actions";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -18,13 +17,11 @@ export default function LoginPage({
       <div className="w-full max-w-md">
         <div className="bg-brand-gray-dark rounded-xl border border-brand-gray-mid p-8">
           <div className="flex justify-center mb-8">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/logo.png"
               alt="Norte Tecnologia"
-              width={160}
-              height={48}
-              className="object-contain"
-              priority
+              className="h-20 w-auto object-contain"
             />
           </div>
 
