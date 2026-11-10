@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/login/actions";
@@ -9,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/clientes", label: "Clientes", icon: "👥" },
   { href: "/produtos", label: "Produtos", icon: "📦" },
   { href: "/estoque", label: "Estoque", icon: "🗄" },
+  { href: "/relatorios", label: "Relatórios", icon: "📊" },
   { href: "/os", label: "Ordens de Serviço", icon: "🔧" },
   { href: "/pdv", label: "PDV", icon: "🛒" },
   { href: "/configuracoes", label: "Configurações", icon: "⚙" },
@@ -21,9 +23,7 @@ export default function Sidebar() {
     <aside className="fixed left-0 top-0 h-screen w-60 bg-brand-gray-dark border-r border-brand-gray-mid flex flex-col z-40">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-4 border-b border-brand-gray-mid">
-        <div className="w-8 h-8 bg-brand-yellow rounded flex items-center justify-center font-black text-brand-black text-sm">
-          NT
-        </div>
+        <Image src="/icon-192.png" alt="NT" width={32} height={32} className="rounded" />
         <div>
           <div className="text-sm font-bold text-white leading-tight">Norte Tecnologia</div>
           <div className="text-xs text-gray-500">ERP</div>

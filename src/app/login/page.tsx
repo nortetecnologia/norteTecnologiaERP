@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { loginAction } from "./actions";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -17,9 +18,7 @@ export default function LoginPage({
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-brand-yellow rounded-xl flex items-center justify-center font-black text-brand-black text-2xl mb-4">
-            NT
-          </div>
+          <Image src="/logo.png" alt="Norte Tecnologia" width={180} height={60} className="mb-4" priority />
           <h1 className="text-xl font-bold text-white">Norte Tecnologia</h1>
           <p className="text-sm text-gray-500 mt-1">Sistema de Gestão (ERP)</p>
         </div>
