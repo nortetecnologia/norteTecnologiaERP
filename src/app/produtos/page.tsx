@@ -25,7 +25,8 @@ export default async function ProdutosPage({
 
   if (q) query = query.or(`name.ilike.%${q}%,sku.ilike.%${q}%`);
 
-  const { data: productsRaw } = await query;
+  const { data: productsRaw, error: productsError } = await query;
+  if (productsError) console.error("[produtos] query error:", productsError.message);
   const products = productsRaw ?? [];
 
   return (

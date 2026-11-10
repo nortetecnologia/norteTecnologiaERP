@@ -150,20 +150,6 @@ export default function ConfigForm({ settings }: { settings: any }) {
         </div>
       </div>
 
-      <div className="bg-brand-gray-dark border border-brand-gray-mid rounded-xl p-5 space-y-4">
-        <div className="text-sm font-semibold text-gray-300">Estoque</div>
-        <div>
-          <label className="text-xs text-gray-400 block mb-1">Alerta de estoque baixo (quantidade mínima)</label>
-          <input
-            type="number"
-            name="low_stock_threshold"
-            defaultValue={settings?.low_stock_threshold ?? 5}
-            min="1"
-            className="w-full max-w-xs bg-brand-gray-mid border border-brand-gray-light rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-yellow"
-          />
-        </div>
-      </div>
-
       <button
         type="submit"
         disabled={isPending}

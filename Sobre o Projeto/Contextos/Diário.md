@@ -10,8 +10,8 @@
 
 - **Estágio:** Sistema em produção. Todos os módulos da Fase 1 implementados e funcionando.
 - **URL de produção:** `https://norte-tecnologia-sistema.vercel.app`
-- **Última atividade:** 2026-11-10 — Correção de middleware bloqueando arquivos estáticos + verificação de logo na produção.
-- **Situação geral:** Sistema operacional. Migrations aplicadas no Supabase. Cloudinary integrado. Upload de imagens nas OS funcionando. Autenticação por `app_metadata.erp_role`.
+- **Última atividade:** 2026-11-10 — Correção de nomes de colunas (produtos/PDV), configurações completas com formas de pagamento, validação CPF/CNPJ.
+- **Situação geral:** Sistema operacional. Migrations aplicadas no Supabase. Cloudinary integrado. Upload de imagens nas OS funcionando. Autenticação por `app_metadata.erp_role`. Banco de dados compartilhado com o site — colunas corretas: `is_active`, `stock`, `primary_image_url`.
 - **Próxima etapa:** Fase 2 — Roles diferenciados no dashboard (admin vs. operador), relatórios avançados, NF-e.
 
 ---
@@ -19,13 +19,35 @@
 ## 2. Última atualização
 
 - **Data:** 2026-11-10
-- **Atividade:** Correção do middleware que redirecionava requisições para arquivos estáticos (`.png`, `.jpg`, etc.) para `/login`, causando quebra da logo na tela de login.
-- **Resultado:** Logo da Norte Tecnologia exibindo corretamente em produção.
+- **Atividade:** Correção de nomes de colunas no banco compartilhado com o site; configurações completas; validação CPF/CNPJ.
+- **Commits:** `097c196` (docs), `322303e` (relatórios OS/Vendas), `ad639f3` (fix colunas + config + CPF)
+- **Resultado:** Produtos aparecem corretamente em Produtos e PDV. Configurações salva whatsapp, e-mail, cidade, UF e formas de pagamento. Clientes validam CPF/CNPJ antes de enviar.
 - **Situação:** Sistema estável em produção.
 
 ---
 
 ## 3. Implementações concluídas
+
+### 2026-11-10 — Fix: nomes de colunas produtos/PDV + configurações + validação CPF/CNPJ
+
+- **Objetivo:** Corrigir "Nenhum produto encontrado" em Produtos e PDV, campos faltantes em Configurações e adicionar validação de CPF/CNPJ em Clientes.
+- **Causa raiz:** ERP usava nomes de colunas errados para a tabela `products` (compartilhada com o site): `active` (correto: `is_active`), `stock_quantity` (correto: `stock`), `image_url` (correto: `primary_image_url`). Configurações usava `phone` (correto: `whatsapp_number`) e não expunha `email`, `city`, `state_abbr`, `payment_methods`.
+- **Implementação:**
+  1. **Produtos/PDV (6 arquivos):** renomeadas todas as referências às colunas incorretas
+  2. **Configurações:** `ConfigForm.tsx` reescrito com todos os campos reais de `store_settings`; editor de formas de pagamento (adicionar/remover); `actions.ts` atualizado
+  3. **Clientes:** `CustomerForm.tsx` adiciona validação client-side de CPF (11 dígitos) e CNPJ (14 dígitos) com verificação dos dígitos verificadores
+- **Arquivos alterados:** `src/app/produtos/page.tsx`, `ProdutoForm.tsx`, `actions.ts`, `src/app/pdv/page.tsx`, `PDVClient.tsx`, `actions.ts`, `src/app/configuracoes/ConfigForm.tsx`, `actions.ts`, `src/app/clientes/CustomerForm.tsx`
+- **Commit:** `ad639f3`
+
+---
+
+### 2026-11-10 — Feat: relatórios OS e Vendas separados com filtros
+
+- **Objetivo:** Implementar relatórios de OS por dia/mês/ano com filtros opcionais por cliente (inspirado no OSVendas 5.0).
+- **Implementação:** `src/app/relatorios/page.tsx` reescrito com duas abas (Vendas PDV e OS). Aba OS: filtros de ano/mês/dia e cliente; agrupamento por dia; links para cada OS.
+- **Commit:** `322303e`
+
+---
 
 ### 2026-11-10 — Fix: middleware bloqueando arquivos estáticos
 
