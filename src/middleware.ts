@@ -51,13 +51,39 @@ export async function middleware(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user && !isLoginPage) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
+    if (!user) {
+      if (!isLoginPage) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/login";
+        return NextResponse.redirect(url);
+      }
+      return supabaseResponse;
     }
 
-    if (user && isLoginPage) {
+    // User is authenticated — check ERP role
+    const { data: roleData } = await supabase
+      .from("erp_user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .single();
+
+    const hasRole = !!roleData;
+
+    if (!hasRole) {
+      // Logged-in user has no ERP access
+      if (!isLoginPage) {
+        // Block every protected page; redirect to login showing "unauthorized"
+        const url = request.nextUrl.clone();
+        url.pathname = "/login";
+        url.searchParams.set("error", "unauthorized");
+        return NextResponse.redirect(url);
+      }
+      // Allow through to login page so user can sign in with another account
+      return supabaseResponse;
+    }
+
+    // User has role — redirect away from login page
+    if (isLoginPage) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);

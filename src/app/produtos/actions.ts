@@ -2,13 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAuth } from "@/lib/auth";
 
 async function getAuth() {
-  const anonClient = await createClient();
-  const { data: { user }, error } = await anonClient.auth.getUser();
-  if (error || !user) throw new Error("Não autorizado.");
+  await requireAuth();
   return createAdminClient();
 }
 

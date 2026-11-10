@@ -1,5 +1,12 @@
 import { loginAction } from "./actions";
 
+const ERROR_MESSAGES: Record<string, string> = {
+  invalid: "E-mail ou senha incorretos.",
+  rate_limit: "Muitas tentativas. Aguarde 15 minutos.",
+  unauthorized: "Seu usuário não tem acesso ao sistema ERP. Contate o administrador.",
+  forbidden: "Você não tem permissão para executar esta ação.",
+};
+
 export default function LoginPage({
   searchParams,
 }: {
@@ -61,13 +68,21 @@ async function ErrorBanner({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const params = await searchParams;
-  if (!params.error) return null;
+  const { error } = await searchParams;
+  if (!error) return null;
+
+  const message = ERROR_MESSAGES[error] ?? "Ocorreu um erro. Tente novamente.";
+  const isUnauthorized = error === "unauthorized" || error === "forbidden";
+
   return (
-    <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-sm text-red-400">
-      {params.error === "rate_limit"
-        ? "Muitas tentativas. Aguarde 15 minutos."
-        : "E-mail ou senha incorretos."}
+    <div
+      className={`mb-4 p-3 rounded-lg text-sm border ${
+        isUnauthorized
+          ? "bg-orange-500/10 border-orange-500/30 text-orange-400"
+          : "bg-red-500/10 border-red-500/30 text-red-400"
+      }`}
+    >
+      {message}
     </div>
   );
 }

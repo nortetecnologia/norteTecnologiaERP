@@ -1,13 +1,10 @@
-import { redirect } from "next/navigation";
 import AppLayout from "@/components/layout/AppLayout";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth";
 import ConfigForm from "./ConfigForm";
 
 export default async function ConfiguracoesPage() {
-  const anonClient = await createClient();
-  const { data: { user } } = await anonClient.auth.getUser();
-  if (!user) redirect("/login");
+  await requireAdmin();
 
   const supabase = createAdminClient();
   const { data: settings } = await supabase
@@ -18,7 +15,15 @@ export default async function ConfiguracoesPage() {
   return (
     <AppLayout>
       <div className="p-6 max-w-2xl">
-        <h1 className="text-2xl font-bold text-white mb-6">Configurações</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-white">Configurações</h1>
+          <a
+            href="/configuracoes/usuarios"
+            className="text-sm text-brand-yellow hover:text-brand-yellow-dark transition-colors"
+          >
+            👥 Usuários ERP
+          </a>
+        </div>
         <ConfigForm settings={settings} />
       </div>
     </AppLayout>
