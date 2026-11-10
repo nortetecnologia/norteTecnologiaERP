@@ -66,8 +66,8 @@ export default function ProdutoForm({
             <label className="text-xs text-gray-400 block mb-1">Estoque</label>
             <input
               type="number"
-              name="stock_quantity"
-              defaultValue={product?.stock_quantity ?? "0"}
+              name="stock"
+              defaultValue={product?.stock ?? "0"}
               min="0"
               className="w-full bg-brand-gray-mid border border-brand-gray-light rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-yellow"
             />
@@ -100,18 +100,18 @@ export default function ProdutoForm({
         <div className="flex items-center gap-3">
           <input
             type="checkbox"
-            name="active"
-            id="active"
-            defaultChecked={product?.active ?? true}
+            name="is_active"
+            id="is_active"
+            defaultChecked={product?.is_active ?? true}
             value="true"
             className="accent-brand-yellow"
           />
-          <label htmlFor="active" className="text-sm text-gray-300">Produto ativo</label>
+          <label htmlFor="is_active" className="text-sm text-gray-300">Produto ativo</label>
         </div>
 
         <ImageUpload
-          name="image_url"
-          currentUrl={product?.image_url}
+          name="primary_image_url"
+          currentUrl={product?.primary_image_url}
           folder="erp/produtos"
           label="Imagem do produto"
         />

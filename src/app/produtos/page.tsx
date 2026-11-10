@@ -19,7 +19,7 @@ export default async function ProdutosPage({
 
   let query = supabase
     .from("products")
-    .select("id, name, sku, price, stock_quantity, active, image_url, categories(name)")
+    .select("id, name, sku, price, stock, is_active, primary_image_url, categories(name)")
     .order("name")
     .limit(200);
 
@@ -77,8 +77,8 @@ export default async function ProdutosPage({
                   <tr key={p.id} className="border-t border-brand-gray-mid hover:bg-brand-gray-mid/30 transition-colors">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
-                        {p.image_url ? (
-                          <img src={p.image_url} alt={p.name} className="w-10 h-10 object-cover rounded-lg shrink-0" />
+                        {p.primary_image_url ? (
+                          <img src={p.primary_image_url} alt={p.name} className="w-10 h-10 object-cover rounded-lg shrink-0" />
                         ) : (
                           <div className="w-10 h-10 bg-brand-gray-mid rounded-lg shrink-0 flex items-center justify-center text-gray-600 text-xs">📦</div>
                         )}
@@ -92,12 +92,12 @@ export default async function ProdutosPage({
                     </td>
                     <td className="px-5 py-3 text-gray-400 hidden md:table-cell">{p.sku ?? "—"}</td>
                     <td className="px-5 py-3 text-right text-white">{formatCurrency(p.price)}</td>
-                    <td className={`px-5 py-3 text-right hidden md:table-cell ${(p.stock_quantity ?? 0) < 5 ? "text-red-400" : "text-gray-300"}`}>
-                      {p.stock_quantity ?? 0}
+                    <td className={`px-5 py-3 text-right hidden md:table-cell ${(p.stock ?? 0) < 5 ? "text-red-400" : "text-gray-300"}`}>
+                      {p.stock ?? 0}
                     </td>
                     <td className="px-5 py-3 text-center">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${p.active ? "bg-green-900/30 text-green-400" : "bg-gray-800 text-gray-500"}`}>
-                        {p.active ? "Ativo" : "Inativo"}
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${p.is_active ? "bg-green-900/30 text-green-400" : "bg-gray-800 text-gray-500"}`}>
+                        {p.is_active ? "Ativo" : "Inativo"}
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right">

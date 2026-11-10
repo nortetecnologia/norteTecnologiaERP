@@ -13,8 +13,8 @@ export default async function PDVPage() {
   const [{ data: productsRaw }, { data: customersRaw }] = await Promise.all([
     supabase
       .from("products")
-      .select("id, name, price, sku, stock_quantity, image_url")
-      .eq("active", true)
+      .select("id, name, price, sku, stock, primary_image_url")
+      .eq("is_active", true)
       .order("name"),
     supabase
       .from("erp_customers")

@@ -4,7 +4,7 @@ import { useState, useActionState } from "react";
 import { createSale } from "./actions";
 import { formatCurrency } from "@/lib/utils";
 
-interface Product { id: string; name: string; price: number; sku?: string; stock_quantity?: number; image_url?: string | null }
+interface Product { id: string; name: string; price: number; sku?: string; stock?: number; primary_image_url?: string | null }
 interface Customer { id: string; name: string; phone?: string }
 interface CartItem { product_id: string; description: string; quantity: number; unit_price: number }
 interface Payment { method: string; amount: number }
@@ -109,8 +109,8 @@ export default function PDVClient({
               onClick={() => addToCart(p)}
               className="text-left bg-brand-gray-dark border border-brand-gray-mid rounded-xl overflow-hidden hover:border-brand-yellow/50 transition-colors"
             >
-              {p.image_url ? (
-                <img src={p.image_url} alt={p.name} className="w-full h-24 object-cover" />
+              {p.primary_image_url ? (
+                <img src={p.primary_image_url} alt={p.name} className="w-full h-24 object-cover" />
               ) : (
                 <div className="w-full h-24 bg-brand-gray-mid flex items-center justify-center text-3xl text-gray-600">📦</div>
               )}
@@ -118,9 +118,9 @@ export default function PDVClient({
                 <div className="text-sm text-white font-medium leading-tight truncate">{p.name}</div>
                 {p.sku && <div className="text-xs text-gray-500 truncate">{p.sku}</div>}
                 <div className="text-brand-yellow text-sm font-bold mt-0.5">{formatCurrency(p.price)}</div>
-                {p.stock_quantity !== undefined && (
-                  <div className={`text-xs ${(p.stock_quantity ?? 0) < 5 ? "text-red-400" : "text-gray-500"}`}>
-                    Estoque: {p.stock_quantity}
+                {p.stock !== undefined && (
+                  <div className={`text-xs ${(p.stock ?? 0) < 5 ? "text-red-400" : "text-gray-500"}`}>
+                    Estoque: {p.stock}
                   </div>
                 )}
               </div>

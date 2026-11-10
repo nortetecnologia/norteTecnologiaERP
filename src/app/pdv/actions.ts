@@ -85,15 +85,15 @@ export async function createSale(prevState: unknown, formData: FormData) {
     // Decrement stock in products table
     const { data: product } = await supabase
       .from("products")
-      .select("stock_quantity")
+      .select("stock")
       .eq("id", item.product_id)
       .single();
 
     if (product) {
-      const newQty = Math.max(0, (product.stock_quantity ?? 0) - item.quantity);
+      const newQty = Math.max(0, (product.stock ?? 0) - item.quantity);
       await supabase
         .from("products")
-        .update({ stock_quantity: newQty })
+        .update({ stock: newQty })
         .eq("id", item.product_id);
 
       // Register stock movement
