@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
-import { getUserRole } from "@/lib/auth";
+import { extractRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getCloudinaryCreds } from "@/lib/cloudinary";
 
@@ -11,8 +11,7 @@ export async function POST(request: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
   }
-  const role = await getUserRole(user.id);
-  if (!role) {
+  if (!extractRole(user.app_metadata)) {
     return NextResponse.json({ error: "Acesso negado ao ERP." }, { status: 403 });
   }
 

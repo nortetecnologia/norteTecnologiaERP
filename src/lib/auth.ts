@@ -1,30 +1,33 @@
+import { createClient } from "./supabase/server";
 import { createAdminClient } from "./supabase/admin";
 import { redirect } from "next/navigation";
-import { createClient } from "./supabase/server";
 
 export type ERPRole = "admin" | "operador";
 
-export async function getUserRole(userId: string): Promise<ERPRole | null> {
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("erp_user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .single();
-  return (data?.role as ERPRole) ?? null;
+/** Reads the ERP role from Supabase app_metadata (set in Supabase Auth dashboard). */
+export function extractRole(appMetadata: Record<string, unknown> | null | undefined): ERPRole | null {
+  const role = appMetadata?.erp_role;
+  if (role === "admin" || role === "operador") return role;
+  return null;
 }
 
-/** Throws redirect to /login if user has no ERP access. */
+/**
+ * Fetches the current user and their ERP role.
+ * Throws redirect to /login if not authenticated or no ERP access.
+ */
 export async function requireAuth(): Promise<{ userId: string; role: ERPRole }> {
-  const anonClient = await createClient();
+  const supabase = await createClient();
   const {
     data: { user },
-  } = await anonClient.auth.getUser();
+  } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
 
-  const role = await getUserRole(user.id);
-  if (!role) redirect("/login?error=unauthorized");
+  const role = extractRole(user.app_metadata);
+  if (!role) {
+    await supabase.auth.signOut();
+    redirect("/login?error=unauthorized");
+  }
 
   return { userId: user.id, role };
 }
@@ -34,4 +37,16 @@ export async function requireAdmin(): Promise<{ userId: string; role: "admin" }>
   const { userId, role } = await requireAuth();
   if (role !== "admin") redirect("/login?error=forbidden");
   return { userId, role: "admin" };
+}
+
+/**
+ * Grants or revokes ERP access for a user via Supabase admin API.
+ * Only called from server actions guarded by requireAdmin().
+ */
+export async function setUserERPRole(userId: string, role: ERPRole | null) {
+  const supabase = createAdminClient();
+  const { error } = await supabase.auth.admin.updateUser(userId, {
+    app_metadata: { erp_role: role ?? null },
+  });
+  if (error) throw new Error(error.message);
 }

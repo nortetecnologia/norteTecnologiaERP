@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { extractRole } from "@/lib/auth";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -47,6 +48,7 @@ export async function middleware(request: NextRequest) {
       },
     });
 
+    // getUser() verifies the JWT server-side and returns app_metadata
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -60,29 +62,22 @@ export async function middleware(request: NextRequest) {
       return supabaseResponse;
     }
 
-    // User is authenticated — check ERP role
-    const { data: roleData } = await supabase
-      .from("erp_user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .single();
+    // ERP role comes from app_metadata — no extra DB query needed
+    const role = extractRole(user.app_metadata);
 
-    const hasRole = !!roleData;
-
-    if (!hasRole) {
-      // Logged-in user has no ERP access
+    if (!role) {
+      // Authenticated in Supabase but no ERP access
       if (!isLoginPage) {
-        // Block every protected page; redirect to login showing "unauthorized"
         const url = request.nextUrl.clone();
         url.pathname = "/login";
         url.searchParams.set("error", "unauthorized");
         return NextResponse.redirect(url);
       }
-      // Allow through to login page so user can sign in with another account
+      // Allow login page so they can try another account
       return supabaseResponse;
     }
 
-    // User has role — redirect away from login page
+    // Has ERP role — redirect away from login
     if (isLoginPage) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
