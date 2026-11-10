@@ -16,10 +16,11 @@ export default async function EditarProdutoPage({
   if (!user) redirect("/login");
 
   const supabase = createAdminClient();
-  const [{ data: product }, { data: categories = [] }] = await Promise.all([
+  const [{ data: product }, { data: categoriesRaw }] = await Promise.all([
     supabase.from("products").select("*").eq("id", id).single(),
     supabase.from("categories").select("id, name").order("name"),
   ]);
+  const categories = categoriesRaw ?? [];
 
   if (!product) notFound();
 

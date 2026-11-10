@@ -10,16 +10,19 @@ export default async function NovaOSPage() {
   if (!user) redirect("/login");
 
   const supabase = createAdminClient();
-  const { data: customers = [] } = await supabase
+  const { data: customersRaw } = await supabase
     .from("erp_customers")
     .select("id, name, phone")
     .order("name");
 
-  const { data: products = [] } = await supabase
+  const { data: productsRaw } = await supabase
     .from("products")
     .select("id, name, price, sku")
     .eq("active", true)
     .order("name");
+
+  const customers = customersRaw ?? [];
+  const products = productsRaw ?? [];
 
   return (
     <AppLayout>

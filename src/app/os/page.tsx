@@ -27,7 +27,8 @@ export default async function OSPage({
   if (status) query = query.eq("status", status);
   if (q) query = query.ilike("title", `%${q}%`);
 
-  const { data: orders = [] } = await query.returns<ServiceOrder[]>();
+  const { data: ordersRaw } = await query.returns<ServiceOrder[]>();
+  const orders = ordersRaw ?? [];
 
   const statuses = ["awaiting", "in_progress", "done", "delivered", "cancelled"] as const;
 

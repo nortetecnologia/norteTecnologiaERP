@@ -27,7 +27,8 @@ export default async function ClientesPage({
     query = query.or(`name.ilike.%${q}%,phone.ilike.%${q}%,cpf_cnpj.ilike.%${q}%`);
   }
 
-  const { data: customers = [] } = await query.returns<Customer[]>();
+  const { data: customersRaw } = await query.returns<Customer[]>();
+  const customers = customersRaw ?? [];
 
   return (
     <AppLayout>

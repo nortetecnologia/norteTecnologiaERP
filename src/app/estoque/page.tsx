@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatCurrency } from "@/lib/utils";
 import type { Product } from "@/types";
+import AjusteEstoqueForm from "./AjusteEstoqueForm";
 
 export default async function EstoquePage() {
   const anonClient = await createClient();
@@ -13,7 +14,14 @@ export default async function EstoquePage() {
 
   const supabase = createAdminClient();
 
-  const [lowStockRes, noImageRes, noSkuRes, recentMovRes] = await Promise.all([
+  const [allProductsRes, lowStockRes, noImageRes, noSkuRes, recentMovRes] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id, name, sku, stock")
+      .eq("is_active", true)
+      .eq("product_type", "product")
+      .order("name")
+      .limit(500),
     supabase
       .from("products")
       .select("id, name, sku, stock, price, categories(name)")
@@ -44,6 +52,7 @@ export default async function EstoquePage() {
       .limit(10),
   ]);
 
+  const allProducts = allProductsRes.data ?? [];
   const lowStock = lowStockRes.data ?? [];
   const noImage = noImageRes.data ?? [];
   const noSku = noSkuRes.data ?? [];
@@ -52,7 +61,10 @@ export default async function EstoquePage() {
   return (
     <AppLayout>
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-white mb-6">Estoque</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-white">Estoque</h1>
+          <AjusteEstoqueForm products={allProducts as any} />
+        </div>
 
         {/* Alerts */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">

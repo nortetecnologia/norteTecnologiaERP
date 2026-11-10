@@ -11,7 +11,7 @@ async function getAuth() {
   return createAdminClient();
 }
 
-export async function createServiceOrder(formData: FormData) {
+export async function createServiceOrder(_prevState: unknown, formData: FormData) {
   const supabase = await getAuth();
 
   const customerId = formData.get("customer_id") as string;

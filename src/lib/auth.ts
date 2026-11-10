@@ -4,10 +4,11 @@ import { redirect } from "next/navigation";
 
 export type ERPRole = "admin" | "operador";
 
-/** Reads the ERP role from Supabase app_metadata (set in Supabase Auth dashboard). */
+/** Reads the ERP role from Supabase app_metadata. Any authenticated user defaults to "operador". */
 export function extractRole(appMetadata: Record<string, unknown> | null | undefined): ERPRole | null {
   const role = appMetadata?.erp_role;
-  if (role === "admin" || role === "operador") return role;
+  if (role === "admin") return "admin";
+  if (role === "operador" || role === undefined || role === null) return "operador";
   return null;
 }
 
@@ -45,7 +46,7 @@ export async function requireAdmin(): Promise<{ userId: string; role: "admin" }>
  */
 export async function setUserERPRole(userId: string, role: ERPRole | null) {
   const supabase = createAdminClient();
-  const { error } = await supabase.auth.admin.updateUser(userId, {
+  const { error } = await supabase.auth.admin.updateUserById(userId, {
     app_metadata: { erp_role: role ?? null },
   });
   if (error) throw new Error(error.message);

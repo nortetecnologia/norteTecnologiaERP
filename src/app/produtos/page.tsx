@@ -25,7 +25,8 @@ export default async function ProdutosPage({
 
   if (q) query = query.or(`name.ilike.%${q}%,sku.ilike.%${q}%`);
 
-  const { data: products = [] } = await query;
+  const { data: productsRaw } = await query;
+  const products = productsRaw ?? [];
 
   return (
     <AppLayout>

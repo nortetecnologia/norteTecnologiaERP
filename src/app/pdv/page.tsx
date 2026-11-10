@@ -10,7 +10,7 @@ export default async function PDVPage() {
   if (!user) redirect("/login");
 
   const supabase = createAdminClient();
-  const [{ data: products = [] }, { data: customers = [] }] = await Promise.all([
+  const [{ data: productsRaw }, { data: customersRaw }] = await Promise.all([
     supabase
       .from("products")
       .select("id, name, price, sku, stock_quantity, image_url")
@@ -21,6 +21,8 @@ export default async function PDVPage() {
       .select("id, name, phone")
       .order("name"),
   ]);
+  const products = productsRaw ?? [];
+  const customers = customersRaw ?? [];
 
   return (
     <AppLayout>

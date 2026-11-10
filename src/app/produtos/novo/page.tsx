@@ -10,10 +10,11 @@ export default async function NovoProdutoPage() {
   if (!user) redirect("/login");
 
   const supabase = createAdminClient();
-  const { data: categories = [] } = await supabase
+  const { data: categoriesRaw } = await supabase
     .from("categories")
     .select("id, name")
     .order("name");
+  const categories = categoriesRaw ?? [];
 
   return (
     <AppLayout>

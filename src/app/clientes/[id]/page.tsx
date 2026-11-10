@@ -21,8 +21,8 @@ export default async function ClienteDetailPage({
 
   const [
     { data: customer },
-    { data: orders = [] },
-    { data: sales = [] },
+    { data: ordersRaw },
+    { data: salesRaw },
   ] = await Promise.all([
     supabase.from("erp_customers").select("*").eq("id", id).single(),
     supabase
@@ -40,6 +40,9 @@ export default async function ClienteDetailPage({
   ]);
 
   if (!customer) notFound();
+
+  const orders = ordersRaw ?? [];
+  const sales = salesRaw ?? [];
 
   const totalGastoOS = orders.reduce((sum: number, o: any) => {
     const items = (o.erp_service_order_items ?? []).reduce(

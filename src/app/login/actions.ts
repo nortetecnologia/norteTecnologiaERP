@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getUserRole } from "@/lib/auth";
+import { extractRole } from "@/lib/auth";
 import { getClientIP, slidingWindow } from "@/lib/rateLimit";
 
 export async function loginAction(formData: FormData) {
@@ -29,7 +29,7 @@ export async function loginAction(formData: FormData) {
   }
 
   // Validate ERP access — sign out immediately if no role
-  const role = await getUserRole(data.user.id);
+  const role = extractRole(data.user.app_metadata);
   if (!role) {
     await supabase.auth.signOut();
     redirect("/login?error=unauthorized");
