@@ -154,6 +154,4 @@ Aplicadas no Supabase SQL Editor (já executadas em produção):
 3. `supabase/migrations/erp_003_pdv.sql` — tabelas `erp_pdv_sales`, `erp_pdv_sale_items`, `erp_pdv_sale_payments`, `erp_stock_movements`
 4. `supabase/migrations/erp_004_user_roles.sql` — tabela `erp_user_roles` (referência)
 5. `supabase/migrations/erp_005_payment_methods.sql` — tabela `payment_methods`, remove CHECK hardcoded, adiciona FK
-6. **`supabase/migrations/erp_006_schema_fixes.sql` — PENDENTE DE APLICAR:** adiciona `images` em `erp_service_orders`, `notes` em `erp_pdv_sales`, remove colunas erradas `stock_quantity`/`active` de `products`
-
-> ⚠️ **erp_006 ainda não foi executada no Supabase.** Execute-a no SQL Editor antes de usar as funcionalidades que dependem de `notes` em vendas.
+6. `supabase/migrations/erp_006_schema_fixes.sql` — adiciona `images` em `erp_service_orders`, `notes` em `erp_pdv_sales`, remove colunas erradas `stock_quantity`/`active` de `products`
