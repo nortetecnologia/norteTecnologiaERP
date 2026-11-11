@@ -19,14 +19,27 @@
 ## 2. Última atualização
 
 - **Data:** 2026-11-11
-- **Atividade:** Sprint — Upload de imagem na edição de OS + Roles no dashboard (admin vs. operador).
+- **Atividade:** Auditoria completa do schema Supabase — 4 problemas encontrados e corrigidos.
 - **Commits:** pendente (sprint atual)
-- **Resultado:** Imagens agora podem ser adicionadas/removidas diretamente no detalhe da OS existente, sem precisar recriar. Dashboard exibe badge de role (Admin/Operador) e mostra botão "Configurações" apenas para admins.
-- **Situação:** Sistema estável em produção.
+- **Resultado:** Migration `erp_006_schema_fixes.sql` criada (pendente aplicar no Supabase). Query inválida de "sem imagem" no estoque corrigida (`product_images` em vez da coluna inexistente `images`). Documentação do banco atualizada.
+- **Situação:** Sistema estável. Executar `erp_006` no Supabase SQL Editor.
 
 ---
 
 ## 3. Implementações concluídas
+
+### 2026-11-11 — Fix: auditoria e correção do schema Supabase
+
+- **Objetivo:** Verificar se todas as tabelas e colunas necessárias existem no banco de dados.
+- **Problemas encontrados:**
+  1. `erp_service_orders.images TEXT[]` — foi adicionada manualmente mas faltava na migration; corrigida em `erp_006`
+  2. `erp_pdv_sales.notes TEXT` — declarada no tipo TypeScript mas ausente na migration `erp_003`; adicionada em `erp_006`
+  3. `products.stock_quantity` e `products.active` — colunas erradas criadas pela migration `erp_003` (correto: `stock` e `is_active`); removidas em `erp_006`
+  4. `estoque/page.tsx` usava `.or("images.is.null,...")` na tabela `products` — coluna inexistente; corrigido para usar join com `product_images`
+- **Arquivos alterados:** `supabase/migrations/erp_006_schema_fixes.sql` (novo), `src/app/estoque/page.tsx`, `Sobre o Projeto/Arquitetura/Banco de Dados.md`
+- **⚠️ Ação necessária:** Executar `erp_006_schema_fixes.sql` no Supabase SQL Editor
+
+---
 
 ### 2026-11-11 — Feat: upload de imagem na edição de OS + roles no dashboard
 

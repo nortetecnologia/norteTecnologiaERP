@@ -14,7 +14,7 @@ export default async function EstoquePage() {
 
   const supabase = createAdminClient();
 
-  const [allProductsRes, lowStockRes, noImageRes, noSkuRes, recentMovRes] = await Promise.all([
+  const [allProductsRes, lowStockRes, allActiveRes, noSkuRes, recentMovRes] = await Promise.all([
     supabase
       .from("products")
       .select("id, name, sku, stock")
@@ -31,13 +31,14 @@ export default async function EstoquePage() {
       .order("stock")
       .limit(50)
       .returns<Product[]>(),
+    // Busca todos os produtos ativos com suas imagens primárias para detectar sem imagem
+    // A coluna 'images' NÃO existe em products — imagens ficam em product_images
     supabase
       .from("products")
-      .select("id, name, sku, stock, is_active")
+      .select("id, name, sku, stock, is_active, product_images(url, is_primary)")
       .eq("product_type", "product")
-      .or("images.is.null,images.eq.{}")
-      .limit(50)
-      .returns<Product[]>(),
+      .eq("is_active", true)
+      .limit(500),
     supabase
       .from("products")
       .select("id, name, stock, is_active")
@@ -52,9 +53,12 @@ export default async function EstoquePage() {
       .limit(10),
   ]);
 
+  // Filtrar produtos sem nenhuma imagem primária (product_images é tabela separada)
+  const allActiveProducts = (allActiveRes.data ?? []) as Array<{ id: string; name: string; sku?: string; stock: number; is_active: boolean; product_images?: { url: string; is_primary: boolean }[] }>;
+  const noImage = allActiveProducts.filter((p) => !p.product_images?.some((img) => img.is_primary));
+
   const allProducts = allProductsRes.data ?? [];
   const lowStock = lowStockRes.data ?? [];
-  const noImage = noImageRes.data ?? [];
   const noSku = noSkuRes.data ?? [];
   const recentMov = recentMovRes.data ?? [];
 
