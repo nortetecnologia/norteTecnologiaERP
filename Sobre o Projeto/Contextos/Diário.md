@@ -18,15 +18,29 @@
 
 ## 2. Última atualização
 
-- **Data:** 2026-11-10
-- **Atividade:** Correção de nomes de colunas no banco compartilhado com o site; configurações completas; validação CPF/CNPJ.
-- **Commits:** `097c196` (docs), `322303e` (relatórios OS/Vendas), `ad639f3` (fix colunas + config + CPF), pendente commit fix product_images
-- **Resultado:** Produtos aparecem corretamente em Produtos e PDV usando join `product_images(url, is_primary)`. Configurações salva whatsapp, e-mail, cidade, UF e formas de pagamento. Clientes validam CPF/CNPJ antes de enviar.
+- **Data:** 2026-11-11
+- **Atividade:** Sprint — Upload de imagem na edição de OS + Roles no dashboard (admin vs. operador).
+- **Commits:** pendente (sprint atual)
+- **Resultado:** Imagens agora podem ser adicionadas/removidas diretamente no detalhe da OS existente, sem precisar recriar. Dashboard exibe badge de role (Admin/Operador) e mostra botão "Configurações" apenas para admins.
 - **Situação:** Sistema estável em produção.
 
 ---
 
 ## 3. Implementações concluídas
+
+### 2026-11-11 — Feat: upload de imagem na edição de OS + roles no dashboard
+
+- **Objetivo:** Permitir adicionar/remover imagens em OS já existentes; mostrar badge de role no dashboard e ocultar ações admin para operadores.
+- **Implementação:**
+  1. **Upload na edição de OS:**
+     - `src/app/os/[id]/OSImageUpload.tsx` — Client Component que usa `uploadOSImage` existente + nova Server Action `updateOSImages` para persistir. Upload imediato, remoção com confirmação visual.
+     - `src/app/os/[id]/editActions.ts` — `updateOSImages(osId, images[])` atualiza `erp_service_orders.images` via admin client.
+     - `src/app/os/[id]/page.tsx` — substituiu galeria estática pelo componente `OSImageUpload` interativo.
+  2. **Roles no dashboard:**
+     - `src/app/dashboard/page.tsx` — extrai role via `extractRole(user.app_metadata)`. Badge "Admin" (amarelo) ou "Operador" (cinza) ao lado do título. Botão "Configurações" aparece apenas para `role === "admin"`. Grid adapta de 4 para 5 colunas quando admin.
+- **Arquivos alterados:** `src/app/os/[id]/page.tsx`, `OSImageUpload.tsx` (novo), `editActions.ts` (novo), `src/app/dashboard/page.tsx`
+
+---
 
 ### 2026-11-10 — Fix: imagens de produtos via tabela product_images
 
@@ -180,10 +194,8 @@
 | Item | Prioridade | Detalhe |
 |------|-----------|--------|
 | Configurar domínio `erp.nortetecnologia.com` | ALTA | Configurar na Vercel e apontar DNS |
-| Upload de imagem na edição de OS | MÉDIA | Atualmente só é possível na criação |
 | Relatórios avançados | BAIXA | Fase 2 — faturamento, lucratividade |
 | Emissão de NF | BAIXA | Fase 2 — Focus NFe ou NFe.io |
-| Roles no dashboard | BAIXA | Fase 2 — mostrar/ocultar funções admin |
 
 ---
 

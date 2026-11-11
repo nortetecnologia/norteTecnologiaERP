@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { formatCurrency, formatDate, formatOSNumber, formatPhone } from "@/lib/utils";
 import { OS_STATUS_LABELS, OS_STATUS_COLORS, type ServiceOrder } from "@/types";
 import OSStatusForm from "./OSStatusForm";
+import OSImageUpload from "./OSImageUpload";
 
 export default async function OSDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -156,31 +157,8 @@ export default async function OSDetailPage({ params }: { params: Promise<{ id: s
           </div>
         )}
 
-        {/* Images */}
-        {os.images && os.images.length > 0 && (
-          <div className="bg-brand-gray-dark border border-brand-gray-mid rounded-xl p-5">
-            <div className="text-xs text-gray-500 mb-3">Imagens ({os.images.length})</div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {os.images.map((url, idx) => (
-                <a
-                  key={idx}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative aspect-square rounded-lg overflow-hidden border border-brand-gray-mid hover:border-brand-yellow/50 transition-colors block"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={url}
-                    alt={`Imagem ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Images — editable */}
+        <OSImageUpload osId={os.id} initialImages={os.images ?? []} />
       </div>
     </AppLayout>
   );
